@@ -1,0 +1,66 @@
+#!/bin/sh
+# Launcher entry for czduke: finds duke3d.grp, a writable save directory and
+# a soundfont, then starts the game. Output goes to /tmp/czduke.log.
+#
+#   CZDUKE_GRP=/path/to/duke3d.grp  force a specific game file
+#   CZDUKE_ASPECT=4:3               keep 4:3 instead of filling the screen
+#   CZDUKE_ARGS="-v1 -l2"           extra engine arguments
+
+APPDIR=/usr/share/APPLaunch/apps/czduke
+HOME="${HOME:-/tmp}"
+GRPDIR="$HOME/duke3d"
+DATA="${XDG_DATA_HOME:-$HOME/.local/share}/czduke"
+LOG=/tmp/czduke.log
+
+mkdir -p "$DATA" "$GRPDIR" 2>/dev/null
+cd "$DATA" 2>/dev/null || cd /tmp
+: >"$LOG" 2>/dev/null || LOG=/dev/null
+
+GRP="${CZDUKE_GRP:-}"
+if [ -z "$GRP" ]; then
+    # Any spelling of the name works: duke3d.grp, DUKE3D.GRP...
+    # ~/CardputerFiles is where the device's web file manager puts uploads.
+    for dir in "$GRPDIR" "$DATA" "$HOME" "$HOME/CardputerFiles" /usr/share/games/duke3d /usr/local/share/games/duke3d \
+               /usr/share/games/jfduke3d /usr/local/share/games/jfduke3d; do
+        [ -d "$dir" ] || continue
+        GRP="$(find "$dir" -maxdepth 1 -iname duke3d.grp \( -type f -o -type l \) 2>/dev/null | head -n 1)"
+        [ -n "$GRP" ] && break
+    done
+fi
+
+if [ -z "$GRP" ] || [ ! -r "$GRP" ]; then
+    {
+        echo "czduke: duke3d.grp not found."
+        echo "czduke: Duke Nukem 3D's game data is not free and is not part of this package."
+        echo "czduke: Copy duke3d.grp from your own copy of the game (shareware 1.3D, registered"
+        echo "czduke: 1.3D or Atomic Edition 1.5) to $GRPDIR/duke3d.grp"
+        echo "czduke: (uploading it to $HOME/CardputerFiles with the web file manager works too),"
+        echo "czduke: or fetch the freely distributable shareware episode with:"
+        echo "czduke:     $APPDIR/get-shareware"
+    } >>"$LOG"
+    exit 1
+fi
+
+# Keep saves and settings in $DATA rather than ~/.jfduke3d, and start from
+# settings that suit the device. Both are only created once.
+: >user_profiles_disabled 2>/dev/null
+[ -f duke3d.cfg ] || cp "$APPDIR/duke3d.cfg" duke3d.cfg 2>/dev/null
+
+# Music is MIDI and needs FluidSynth and a soundfont; without them the game
+# still has sound effects.
+if [ -z "${SDL_SOUNDFONTS:-}" ]; then
+    for sf in /usr/share/sounds/sf2/TimGM6mb.sf2 /usr/share/sounds/sf2/default-GM.sf2 \
+              /usr/share/sounds/sf3/default-GM.sf3 /usr/share/sounds/sf2/FluidR3_GM.sf2; do
+        if [ -f "$sf" ]; then
+            SDL_SOUNDFONTS="$sf"
+            export SDL_SOUNDFONTS
+            break
+        fi
+    done
+fi
+
+DUKE3DGRP="$(basename "$GRP")"
+export DUKE3DGRP
+echo "czduke: grp=$GRP data=$DATA soundfont=${SDL_SOUNDFONTS:-none}" >>"$LOG"
+# shellcheck disable=SC2086
+exec "$APPDIR/czduke" "-j$(dirname "$GRP")" ${CZDUKE_ARGS:-} "$@" >>"$LOG" 2>&1

@@ -1,0 +1,31 @@
+czduke - Duke Nukem 3D for the M5Stack CardputerZero
+Source: https://github.com/droomurray/czduke
+
+This program is put together from parts under two different licences.
+
+1. The Build engine (JFBuild, https://github.com/jonof/jfbuild)
+
+   "Build Engine & Tools" Copyright (c) 1993-1997 Ken Silverman
+   Ken Silverman's official web site: "http://www.advsys.net/ken"
+   See the included license file "BUILDLIC.TXT" for license info.
+
+   Modified from Ken Silverman's original release by Jonathon Fowler and
+   others. The BUILD licence allows free, non-commercial distribution over
+   the Internet only. Its text is in /usr/share/doc/czduke/BUILDLIC.TXT.
+
+2. The Duke Nukem 3D game code (JFDuke3D, https://github.com/jonof/jfduke3d),
+   the Apogee Sound System (JFAudioLib), JFMACT, and the CardputerZero
+   platform code (src/czlayer.c, src/czaudio.c)
+
+   Copyright (C) 1996, 2003 3D Realms Entertainment
+   Copyright (C) 1994-1995 Apogee Software, Ltd.
+   Copyright (C) Jonathon Fowler and contributors
+   Copyright (C) 2026 czduke contributors
+
+   GNU General Public License, version 2 or (at your option) any later
+   version. The text follows below.
+
+No Duke Nukem 3D game data is included. Duke Nukem 3D is a trademark of its
+respective owner; this port is not affiliated with or endorsed by them.
+
+--------------------------------------------------------------------------

@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Fetch the shareware episode of Duke Nukem 3D (v1.3D) for czduke.
+
+The shareware release may be passed on freely as the original, unmodified
+archive (see LICENSE.TXT inside it), so this downloads that archive and
+unpacks duke3d.grp from it. Nothing from it is shipped with czduke.
+
+    get-shareware [target-directory]      default: ~/duke3d
+"""
+import hashlib
+import io
+import os
+import sys
+import urllib.request
+import zipfile
+
+URL = "https://archive.org/download/3dduke13/3dduke13.zip"
+ZIP_SHA256 = "c67efd179022bc6d9bde54f404c707cbcbdc15423c20be72e277bc2bdddf3d0e"
+GRP_SIZE = 11035779
+
+target = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/duke3d")
+os.makedirs(target, exist_ok=True)
+dest = os.path.join(target, "duke3d.grp")
+if os.path.exists(dest):
+    sys.exit(f"{dest} already exists; not replacing it")
+
+print(f"Downloading {URL} ...")
+request = urllib.request.Request(URL, headers={"User-Agent": "czduke-get-shareware"})
+with urllib.request.urlopen(request, timeout=120) as response:
+    archive = response.read()
+if hashlib.sha256(archive).hexdigest() != ZIP_SHA256:
+    sys.exit("The download does not match the known 3dduke13.zip; nothing was installed")
+
+# 3dduke13.zip holds DN3DSW13.SHR, itself a zip with the game files.
+with zipfile.ZipFile(io.BytesIO(archive)) as outer:
+    inner_bytes = outer.read("DN3DSW13.SHR")
+    licence = outer.read("LICENSE.TXT")
+with zipfile.ZipFile(io.BytesIO(inner_bytes)) as inner:
+    grp = inner.read("DUKE3D.GRP")
+if len(grp) != GRP_SIZE:
+    sys.exit("Unexpected DUKE3D.GRP in the archive; nothing was installed")
+
+with open(dest + ".part", "wb") as f:
+    f.write(grp)
+os.replace(dest + ".part", dest)
+with open(os.path.join(target, "LICENSE.TXT"), "wb") as f:
+    f.write(licence)
+print(f"Wrote {dest} (shareware 1.3D). Its terms are in {target}/LICENSE.TXT")

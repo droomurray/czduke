@@ -1,0 +1,6 @@
+.git
+build
+dist
+vendor
+out
+out-arm64

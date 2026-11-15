@@ -1,0 +1,8 @@
+build/
+dist/
+vendor/
+out/
+*.grp
+*.GRP
+.DS_Store
+out-arm64/

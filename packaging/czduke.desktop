@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=DUKE3D
+Exec=/usr/share/APPLaunch/bin/czduke
+Terminal=false
+Icon=share/images/czduke.png
+Type=Application
+Categories=Game;
